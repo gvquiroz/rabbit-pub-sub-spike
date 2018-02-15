@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/streadway/amqp"
 )
@@ -45,10 +46,15 @@ func main() {
 
 	forever := make(chan bool)
 
+	timeout := time.Duration(3 * time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+
 	go func() {
 		for d := range msgs {
 			log.Printf("Received a message: %s", d.Body)
-			resp, err := http.Get(string(d.Body))
+			resp, err := client.Get(string(d.Body))
 
 			if err != nil {
 				log.Printf("Request Error on: %s", d.Body)
